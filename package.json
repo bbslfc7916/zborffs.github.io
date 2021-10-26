@@ -1,0 +1,25 @@
+{
+  "name": "static-site-generator",
+  "version": "1.0.0",
+  "description": "This static site generator is designed to render markdown with LaTex to static HTML pages with as little fuzz as possible. I used it to make [rubenvannieuwpoort.nl](https://rubenvannieuwpoort.nl). It is explicitly designed to fit my needs, so it will not have support for many features.",
+  "main": "index.js",
+  "dependencies": {
+    "markdown-it": "^12.0.6",
+    "markdown-it-katexx": "^3.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubenvannieuwpoort/static-site-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rubenvannieuwpoort/static-site-generator/issues"
+  },
+  "homepage": "https://github.com/rubenvannieuwpoort/static-site-generator#readme"
+}
