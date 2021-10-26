@@ -17,3 +17,4 @@ done
 
 cp -r index_files/* site/
 scripts/format-index > site/index.html
+cp site/index.html index.html
