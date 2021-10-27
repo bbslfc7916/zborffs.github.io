@@ -1,5 +1,6 @@
 # Delta Robot Modeling (1/2)
 *<p style="text-align: center;">October 26, 2021</p>*
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fzborffs.github.io%2Fsite%2Fposts%2Fdelta-robot-modeling.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
 ## Summary
 In this article, I derive the __dynamics, forward kinematics, and inverse kinematics of delta robots__.

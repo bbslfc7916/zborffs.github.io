@@ -2,6 +2,8 @@
 
 *<p style="text-align: center;">August 30, 2021</p>*
 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fzborffs.github.io%2Fsite%2Fposts%2Flotr-chess.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
 ## Project Objective
 The purpose of this project was to learn [SFML](https://github.com/SFML/sfml) and [Dear ImGui](https://github.com/ocornut/imgui) by making a Chess UI to play against [UCI-compliant](https://www.chessprogramming.org/UCI) chess engines. For added fun, I made the UI _Lord of the Rings_ themed. 
 
