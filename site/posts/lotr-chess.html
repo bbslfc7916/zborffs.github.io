@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LOTRChess: Chess Game</title>
+<meta name="viewport" content="width=device-width">
+<link rel="stylesheet" type="text/css" href="style.css"> <link rel="stylesheet" type="text/css" href="katex.min.css">
+
+<link rel="shortcut icon" type="image/png" href="../favicon.png">
+</head>
+<body>
+<article><h1>Lord of the Rings: Chess</h1>
+<p><em><p style="text-align: center;">August 30, 2021</p></em></p>
+<h2>Project Objective</h2>
+<p>The purpose of this project was to learn <a href="https://github.com/SFML/sfml">SFML</a> and <a href="https://github.com/ocornut/imgui">Dear ImGui</a> by making a Chess UI to play against <a href="https://www.chessprogramming.org/UCI">UCI-compliant</a> chess engines. For added fun, I made the UI <em>Lord of the Rings</em> themed.</p>
+<p>The main challenge of this project was to develop something that is at once <strong>maintainable</strong> (in the sense that, a programmer could easily understand the code and add new features) but <strong>efficient</strong> (in the sense that my computer’s fan doesn’t turn on whenever I use the app).</p>
+<p>The game a still a work in-progress.</p>
+<h3>Demo</h3>
+<video width="700" controls autoplay>
+    <source src="lotr-chess-images/lotrchess_demo.mp4" type="video/mp4" playbackRate=2.0>
+</video>
+<p><em><p style="text-align: center;">Figure 1: Demo video of me playing the game multiple times.</p></em></p>
+<h3>Download / Install</h3>
+<p>As of right now, the only way of installing the app is from source. So go to the <a href="https://github.com/zborffs/lotrchess">source repo</a> and follow the build instructions.</p>
+<p>It should take roughly 5 minutes to download and install the app, assuming you already have the pre-requisite programs for the installation (CMake and conan).</p>
+<h2>SFML + Dear ImGui</h2>
+<p>SFML and Dear ImGui are two C++ libraries (with support for other languages) that are often deployed jointly for simple 2-D graphics applications.</p>
+<p>The core of SFML apps is the game-loop. The game-loop is responsible for updating the game state from user-inputs and rendering the game-state onto the screen.</p>
+<pre class="hljs"><code><span class="hljs-comment">// This is the game loop</span>
+<span class="hljs-keyword">while</span> (window.<span class="hljs-built_in">isOpen</span>()) {
+    <span class="hljs-comment">// while the screen hasn&#x27;t been closed</span>
+
+    sf::Event event;
+    <span class="hljs-keyword">while</span> (window.<span class="hljs-built_in">pollEvent</span>(event)) {
+        <span class="hljs-comment">// process all events between the two gameticks</span>
+        <span class="hljs-keyword">switch</span> (event.type) {
+            <span class="hljs-keyword">case</span> sf::Event::EventType::Closed:
+            ...
+        }
+    }
+
+    ImGui::SFML::<span class="hljs-built_in">Update</span>(window, delta_clock_.<span class="hljs-built_in">restart</span>());
+    window.<span class="hljs-built_in">clear</span>(); <span class="hljs-comment">// clear the window</span>
+    ImGui::SFML::<span class="hljs-built_in">Render</span>(window); <span class="hljs-comment">// render ImGui stuff</span>
+    screen-&gt;<span class="hljs-built_in">draw</span>(window); <span class="hljs-comment">// draw stuff in the window</span>
+    window.<span class="hljs-built_in">display</span>(); <span class="hljs-comment">// display the window</span>
+
+}
+</code></pre>
+<h2>System Architecture</h2>
+<p>In order to achieve the the maintenance goals of the project, I tried to use design patterns whenever possible to mediate data-access and enforce certain behaviors.</p>
+<h3>State Design Pattern: Managing Behavior between Screens</h3>
+<p>To manage behavior of the app between “screens” (i.e. the play screen with the chess board or the setup screen with the options to play as white or as black), I used the state design pattern.</p>
+<p>Sample code for the state design pattern may be found below. The main benefit of this pattern is that it <strong>“lets an object alter its behavior when its internal state changes”</strong> [<a href="#guru">1</a>].</p>
+<p>In other words, after the user has clicked some buttons on the main splash screen, the app needs to transition to another screen with different graphics resources and different logic for how to respond to different user-inputs. One way of managing the state changes would be to have a member variable in the application class that holds the state information, then have something like a switch statement to handle the difference in logic. That approach might be okay for very simple state-diagrams, but as the transitioning logic becomes more complicated, the logic internal to a single state becomes more complex, and resource demands become increasingly heavy that paradigm becomes untenable.</p>
+<p>The state design pattern keeps the transition logic simple, separates one state’s logic from another state’s logic, and decouples the state objects and state logic from that of the application, thereby massively simplifying the code.</p>
+<pre class="hljs"><code><span class="hljs-keyword">class</span> <span class="hljs-title class_">App</span>; <span class="hljs-comment">// forward declare the App</span>
+
+<span class="hljs-comment">/** 
+ * abstract state superclass that creates a prototype &quot;Screen&quot; class
+ * and a consistent interface for callers
+ */</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Screen</span> {
+<span class="hljs-keyword">protected</span>:
+    App* context_; <span class="hljs-comment">// pointer to the application (context)</span>
+
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">Screen</span>() = <span class="hljs-keyword">default</span>;
+    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">process_event</span><span class="hljs-params">(sf::Event&amp; event)</span> </span>= <span class="hljs-number">0</span>;
+    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(sf::RenderWindow&amp; window)</span> </span>= <span class="hljs-number">0</span>;
+
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">set_context</span><span class="hljs-params">(App* context)</span> </span>{
+        <span class="hljs-keyword">this</span>-&gt;context_ = context;
+    }
+}
+
+<span class="hljs-comment">/**
+ * The application entry-point: manages our current state
+ */</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">App</span> {
+<span class="hljs-keyword">protected</span>:
+    <span class="hljs-keyword">friend</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PlayScreen</span>;
+    <span class="hljs-keyword">friend</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SplashScreen</span>;
+    <span class="hljs-keyword">friend</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BattleSetupScreen</span>;
+
+<span class="hljs-keyword">private</span>:
+    std::unique_ptr&lt;State&gt; screen_;
+    sf::RenderWindow window_;
+
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">LOTRChess</span><span class="hljs-params">(std::unique_ptr&lt;Screen&gt; init_screen)</span> 
+        : screen_(std::move(init_screen)) {</span>
+        screen_-&gt;<span class="hljs-built_in">set_context</span>(<span class="hljs-keyword">this</span>);
+    }
+
+    <span class="hljs-comment">// transition to another screen</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">transition_to</span><span class="hljs-params">(Screen* screen)</span> </span>{
+        screen_.<span class="hljs-built_in">reset</span>(screen); <span class="hljs-comment">// destroy old screen, store new one</span>
+        screen_-&gt;<span class="hljs-built_in">set_context</span>(<span class="hljs-keyword">this</span>); <span class="hljs-comment">// set the context of screen to &#x27;this&#x27;</span>
+    }
+}
+
+<span class="hljs-comment">/**
+ * concrete PlayScreen class inheriting from the Screen superclass.
+ * handles logic and manages objects when the app is in the PlayScreen 
+ * state.
+ */</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">PlayScreen</span> : <span class="hljs-keyword">public</span> Screen {
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">PlayScreen</span><span class="hljs-params">(Color player_color, Engine engine)</span> </span>{
+        ...
+    }
+
+    ~PlayScreen {
+        ...
+    }
+
+    <span class="hljs-comment">/**
+     * handles logic for this state
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">process_event</span><span class="hljs-params">(sf::Event&amp; event)</span> <span class="hljs-keyword">override</span> </span>{
+        ...
+    }
+
+    <span class="hljs-comment">/**
+     * handles logic for this state
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(sf::RenderWindow&amp; window)</span> <span class="hljs-keyword">override</span> </span>{
+        ...
+    }
+}
+
+<span class="hljs-comment">/**
+ * concrete SplashScreen class inheriting from the Screen superclass.
+ * handles logic and manages objects when the app is in the SplashScreen 
+ * state.
+ */</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">SplashScreen</span> : <span class="hljs-keyword">public</span> Screen {
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">SplashScreen</span><span class="hljs-params">()</span> </span>{
+        ...
+    }
+
+    ~SplashScreen {
+        ...
+    }
+
+    <span class="hljs-comment">/**
+     * handles logic for this state
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">process_event</span><span class="hljs-params">(sf::Event&amp; event)</span> <span class="hljs-keyword">override</span> </span>{
+        ...
+    }
+
+    <span class="hljs-comment">/**
+     * handles logic for this state
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(sf::RenderWindow&amp; window)</span> <span class="hljs-keyword">override</span> </span>{
+        ...
+    }
+}
+</code></pre>
+<h3>Model-View-Controller (MVC): Managing Behavior of a Given Screen</h3>
+<p>To manage the user-input logic, the app’s behavior, and the graphics of a single screen, I made use of the Model-View-Controller (MVC) paradigm.</p>
+<p>Some sample code for the MVC design pattern may be found below. The main benefit of this paradigm is to <strong>decouple the user-input logic, game state, and graphics from one another</strong>.</p>
+<p>The central conceit of this design pattern is <strong>separation of concerns</strong>. The only thing that the View class should know about is how to draw the graphics resources. It should not know anything about how a click affects the layout nor should it know about whether the player is playing as white or black.</p>
+<p>Dido for the model. The model should not know about what graphics resources are being used nor should it know about how the user-input affects whether the player is black or white. It’s only job is to hold onto the game state data.</p>
+<p><strong>This allows the programmer to think about model, view, and controller code separately.</strong> Also, should I choose to change the game’s view to be Star Wars-themed, then I won’t affect the model or the controller code. Similarly, if I choose to add a feature allowing the user to use a joy-stick in addition to the mouse, then I just have to change the controller, but the model and view logic can remain untouched.</p>
+<pre class="hljs"><code><span class="hljs-comment">/**
+ * the concrete screen classes are effectively the controller objects
+ */</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">PlayScreen</span> : <span class="hljs-keyword">public</span> Screen {
+<span class="hljs-keyword">private</span>:
+    PlayModel model_; <span class="hljs-comment">// handles logic</span>
+    PlayView view_; <span class="hljs-comment">// handles graphics</span>
+
+<span class="hljs-keyword">public</span>:
+
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">PlayScreen</span><span class="hljs-params">(Color player_color, Engine engine)</span> </span>{
+        ...
+    }
+
+    ~PlayScreen {
+        ...
+    }
+
+    <span class="hljs-comment">/**
+     * the PlayScreen class manages how the user-input affects the model
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">process_event</span><span class="hljs-params">(sf::Event&amp; event)</span> <span class="hljs-keyword">override</span> </span>{
+        <span class="hljs-keyword">switch</span> (event.type) {
+            <span class="hljs-keyword">case</span> sf::Event::Closed:
+                context_-&gt;window_.<span class="hljs-built_in">close</span>();
+                <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> sf::Event::KeyPressed {
+                <span class="hljs-keyword">if</span> (event.key.code == sf::Keyboard::R) {
+                    <span class="hljs-comment">// if the user pressed &#x27;R&#x27;, then reverse the board</span>
+                    model_.<span class="hljs-built_in">rotate_board</span>(); <span class="hljs-comment">// update the model</span>
+                    view_.<span class="hljs-built_in">update</span>(model_); <span class="hljs-comment">// update view given model</span>
+                }
+                ...
+                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event.key.code == sf::Keyboard::Escape) {
+                    <span class="hljs-comment">// if user pressed ESC, go back to the splash screen</span>
+                    context_-&gt;<span class="hljs-built_in">transition_to</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">SplashScreen</span>());
+                }
+            }
+            ...
+        }
+    }
+
+    <span class="hljs-comment">/**
+     * forwards the draw requests onto the view, which is suited to 
+     * handle such things
+     */</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(sf::RenderWindow&amp; window)</span> <span class="hljs-keyword">override</span> </span>{
+        view_.<span class="hljs-built_in">draw</span>(window); <span class="hljs-comment">// pass the window to the view</span>
+    }
+}
+</code></pre>
+<h2>Multithreading</h2>
+<p>The application makes extensive use of multi-threading to improve its overall performance. For example, if it weren’t for dedicated threads handling move generation and inter-process communication with the chess engine, then the application would constantly stall.</p>
+<p>However, as soon as multiple threads enter the picture, the potential for introducing a host of bugs related to <strong>data-access</strong> and <strong>resource ownership</strong> opens up.</p>
+<p>Nominally, mutexes for synchronizing data-access need to be used on any piece of mutable data being read or written to from more than one thread. The standard C++ library has tools for doing that in such a way as to avoid deadlocking (should they be deployed correctly), like <code>std::lock_guard&lt;std::mutex&gt;</code>.</p>
+<pre class="hljs"><code><span class="hljs-comment">// checks to see whether the &quot;quit_&quot; member variable is true</span>
+<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">EngineInterface::check_quit</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">guard</span><span class="hljs-params">(mu_quit_)</span></span>;
+    <span class="hljs-keyword">return</span> quit_;
+}
+
+<span class="hljs-comment">// sets the &quot;quit_&quot; member variable to true</span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">EngineInterface::quit</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">guard</span><span class="hljs-params">(mu_quit_)</span></span>;
+    quit_ = <span class="hljs-literal">true</span>;
+}
+</code></pre>
+<p>But what’s more important than simply using mutexes is having an architecture in place that enforces a certain type of communication between threads, so that a programmmer can reason more easily about the code and more quickly identify bugs arising from multithreading.</p>
+<p>One such architecture is uni-directional communication. In this case, the main thread makes requests to the engine I/O thread with no expectation of ever getting a result. The engine I/O thread does not know about the main thread at all, and simply services requests. Then, upon finishing the request, the engine I/O thread will update some  member variables that are visible to the main thread. The main thread will then perform a synchronized read of such member variables to get the result.</p>
+<p>The main benefits of uni-directional communication are two-fold. For one, the programmer can focus on implementing the engine I/O logic without being concerned about communicating with other threads. Second, the synchronization logic is entirely encapsulated in the EngineInterface class, so making requests to the EngineInterface class from the main-thread looks like making a function call.</p>
+<h2>Conclusion</h2>
+<p>My goal for this project was to build a chess UI that would enable me to play against different UCI chess engines. Though the game isn’t perfect and there are still many features I wish to implement, the bare-bones of the app is complete!</p>
+<p>Concurrent with that functional goal were non-functional goals related to the maintenance and efficiency of the code. By making deliberate choices about which design patterns to deploy as well as seeking to use multiple threads to handle different aspects of the project, I was able to achieve those non-functional goals as well.</p>
+<h3>References</h3>
+<p>[1] <a href="https://refactoring.guru/design-patterns/state">https://refactoring.guru/design-patterns/state</a><a id="guru"></p>
+</article>
+</body>
+</html>

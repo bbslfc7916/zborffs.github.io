@@ -2,9 +2,20 @@
 
 const fs = require('fs');
 const mk = require('markdown-it-katexx');
-// var hljs = require('highlight.js') // https://highlightjs.org/
+var hljs = require('highlight.js') // https://highlightjs.org/
 const markdown = require('markdown-it')(
 	{
+		highlight: function (str, lang) {
+			if (lang && hljs.getLanguage(lang)) {
+			  try {
+				return '<pre class="hljs"><code>' +
+					   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+					   '</code></pre>';
+			  } catch (__) {}
+			}
+		
+			return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+		},
 		html: true,
 		breaks: true,
 		typographer: true,

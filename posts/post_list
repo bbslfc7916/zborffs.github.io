@@ -1,1 +1,2 @@
-Delta Robot Modeling [1/2]	delta-robot-modeling	In this article, I derive the dynamics, forward kinematics, and inverse kinematics of a delta robot.
+Delta Robot Modeling (1/2)	delta-robot-modeling	(10-26-2021) I derive the dynamics, forward kinematics, and inverse kinematics of delta robots.
+LOTRChess: Chess Game	lotr-chess	(08-30-2021) I review some software engineering design techniques I used in building a chess game in C++.

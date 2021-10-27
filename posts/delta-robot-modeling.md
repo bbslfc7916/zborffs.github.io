@@ -1,7 +1,10 @@
-# Delta Robot Modeling [1/2]
+# Delta Robot Modeling (1/2)
+*<p style="text-align: center;">October 26, 2021</p>*
 
 ## Summary
-In this article, I derive the __dynamics, forward kinematics, and inverse kinematics of a delta robot__.
+In this article, I derive the __dynamics, forward kinematics, and inverse kinematics of delta robots__.
+
+All the source code is available on [github](https://github.com/zborffs/Delta). 
 
 ### Demo
 ![Delta Robot Animation](delta-robot-modeling-images/demo.gif)
