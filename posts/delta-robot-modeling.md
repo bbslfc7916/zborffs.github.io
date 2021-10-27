@@ -1,13 +1,16 @@
 # Delta Robot Modeling [1/2]
 
-## Demo
-
 ## Summary
 In this article, I derive the __dynamics, forward kinematics, and inverse kinematics of a delta robot__.
 
+### Demo
+![Delta Robot Animation](delta-robot-modeling-images/demo.gif)
+*<p style="text-align: center;">Figure 1: Animated numerical solution to system of differential-algebraic equations (DAEs) representing the dynamics of a delta robot</p>*
+
 
 ## Delta Robot Description
-![img](Delta Robot Image)
+![Delta Robot Image](delta-robot-modeling-images/delta_robot_image.jpg)
+*<p style="text-align: center;">Figure 2: Source, EPFL [<a href="#epfl">1</a>]</p>*
 
 A delta robot is a parallel robot consisting of an immobile base, a mobile platform below the base, and 3 arms connecting the base to the platform. Each arm consists of 2 links and 2 joints - one revolute, one universal. The revolute joint connects the base to the upper link, and is actuated by a motor. The universal joint connects the upper link to the lower link, and is passive. The end of the lower link of each arm attaches to the platform, where the end-effector is mounted.
 
@@ -28,7 +31,8 @@ From a physics perspective, this approach is simple. The holonomic constraint ta
 ### Single Arm
 We start by modeling a single arm. As with any Lagrangian formulation, we start by ascertaining the equations for the positions of the generalized coordinates. Those generalized coordinates will correspond to the angles taken by the simple and spherical pendula.
 
-![Diagram of Angles](asdf)
+![Diagram of Angles](delta-robot-modeling-images/delta_robot_labels.png)
+*<p style="text-align: center;">Figure 3: Source, MERL [<a href="#merl">2</a>]</p>*
 
 Parameters / Variables | Physical Meaning
 :---------------------:|-------------------------------------------:
@@ -116,13 +120,9 @@ $$
 V = -g (l_1(\frac{1}{2} m_1 + (m_2 + \frac{m_3}{3})) \sin(\phi_1) + l_2(\frac{1}{2} m_2 + \frac{m_3}{3}) \sin(\phi_2) \cos(\phi_3))
 $$
 
-The Lagrangian of a system is equal to the system's kinetic energy minus its potential energy. In this case, the expression is too long to warrant typing out:
-$$
-L = T - V
-$$
+The Lagrangian of a system is a scalr quantity equal to the system's kinetic energy minus its potential energy: $L = T - V$. In this case, the expression is too long to warrant typing out, but the following MATLAB code will symbolically generate the expressions.
 
-The following MATLAB code will symbolically generate the expressions above.
-```MATLAB
+```javascript
 phi1 = q1(1);
 phi2 = q1(2);
 phi3 = q1(3);
@@ -146,41 +146,31 @@ V1 = -g * ((lc1 * m1 + l1 * (m2 + m3 / 3)) * sin(phi1) + (lc2 * m2 + l2 * m3 / 3
 L1 = T1 - V1;
 ```
 
-Next, we transform the Lagrangian into the Euler-Lagrange equation below:
+Next, we transform the Lagrangian via the Euler-Lagrange equation into differential equations for the double pendulum: 
+
 $$
 \frac{d}{dt}\frac{\partial L}{\partial \dot q} - \frac{\partial L}{\partial q} = 0
-$$
+$$ 
 
 Note: $q=\begin{bmatrix}\phi_1 & \phi_2 & \phi_3\end{bmatrix}^T$ and $\dot{q}=\begin{bmatrix}\dot{\phi}_1 & \dot{\phi}_2 & \dot{\phi}_3\end{bmatrix}^T$
 
-This yields system of 3, 2nd order differential equations. By factoring out the acceleration term, we get an expression that resembles:
+This yields system of three, 2nd order differential equations. By factoring out the acceleration term, we get an expression that resembles: 
 
 $$
 M(q) \ddot{q} + C(q, \dot{q}) + G(q) = 0
 $$
 
-$$
-M(q) \in \mathbb{R}^{3\times 3} \\\\
-$$
+where $M(q) \in \mathbb{R}^{3\times 3}$, $C(q, \dot{q}) \in \mathbb{R}^{3\times 1}$, and $G(q) \in \mathbb{R}^{3 \times 1}$. 
 
-$$
-C(q, \dot{q}) \in \mathbb{R}^{3\times 1} \\\\
-$$
-
-$$
-G(q) \in \mathbb{R}^{3 \times 1}
-$$
-
-Because the inertia matrix is positive-definite, it has an inverse - though it might ill-conditioned. This means we can manipulate the above equation to yield an equation for the acceleration:
+Because the inertia matrix is positive-definite, it has an inverse - though it might ill-conditioned. This means we can manipulate the above equation to yield an equation for the acceleration, which can be used to solve for trajectories numerically:
 
 $$
 \ddot{q} = M^{-1}(q)(-C(q, \dot{q}) - G(q))
 $$
 
-This equation may now be used to solve for trajectories numerically.
-
-#### Simple-Spherical Double Pendulum Animation
-![](Demo)
+### (Simple-Spherical) Double Pendulum Animation (without Damping)
+![Double Pendulum Animation](delta-robot-modeling-images/arm_animation.gif)
+*<p style="text-align: center;">Figure 4: Animated solution to system of differential equations representing dynamics of double pendulum whose upper pendulum is a simple pendulum and whose bottom pendulum is a spherical pendulum</p>*
 
 
 ## Complete Robot (Lagrangian)
@@ -188,27 +178,13 @@ Now that we have verified that the double pendulum model is reasonable, we can m
 
 The complete robot may be modeled as the composite of three of these double pendula offset by 120 degrees about the z-axis subject to the holonomic constraint forcing the ends of each pendulum to be equal.
 
-The full unconstrained Lagrangian is given by the sum of the Lagrangians of the three subsystems (three double pendula): 
+The full unconstrained Lagrangian is given by the sum of the Lagrangians of the three subsystems (three double pendula): $L_u = L_1 + L_2 + L_3$. We can constrain the system by adding an additional holonomic constraint term: $L = L_u + \lambda^T h$, where $\lambda \in \mathbb{R}^{6 \times 1}$.
 
 $$
-L_u = L_1 + L_2 + L_3
+h(q) = \begin{bmatrix} x_{13} - R_z(2\pi / 3) x_{23} \\\ x_{13} - R_z(-2\pi / 3) x_{33} \end{bmatrix} \in \mathbb{R}^{6 \times 1}
 $$
 
-We can constrain the system by adding an additional holonomic constraint term:
-
-$$
-L = L_u + \lambda^T h
-$$
-
-$$
-\lambda \in \mathbb{R}^{6 \times 1}
-$$
-
-$$
-h = \begin{bmatrix} x_{13} - R_z(2\pi / 3) x_{23} \\\ x_{13} - R_z(-2\pi / 3) x_{33} \end{bmatrix} \in \mathbb{R}^{6 \times 1}
-$$
-
-where $$\lambda$$ denotes a vector of Lagrange multipliers and $$h$$ denotes a holonomic constraint vector.
+where $\lambda$ denotes a vector of Lagrange multipliers and $h$ denotes a holonomic constraint vector.
 
 
 The following MATLAB snippet performs these operations and additionally transforms the Lagrangian into the Euler-Lagrange equations.
@@ -239,16 +215,10 @@ This generates a system of nine, non-linear second-order differential equations 
 The differential equations have the form:
 
 $$
-M(q) \ddot{q} + C(q,\dot{q}) + G(q) = H^{T}(q) \lambda 
+M(q) \ddot{q} + C(q,\dot{q}) + G(q) = M(q) \ddot{q} + \dot{q}^T \Gamma(q) \dot{q} + G(q) = H^{T}(q) \lambda 
 $$
 
-or equivalently
-
-$$
-M(q) \ddot{q} + \dot{q}^T \Gamma(q) \dot{q} + G(q) = H^{T}(q) \lambda 
-$$
-
-This may be rearranged in the following manner to yield a numerically integrable function:
+where $H(q) = \dot{h}(q(t))$. This may be rearranged in the following manner to yield a numerically integrable function:
 
 $$
 \ddot{q} = M^{-1} (H^T\lambda - \dot{q}^T \Gamma \dot{q} - G)
@@ -256,13 +226,7 @@ $$
 
 Because of the addition of the Lagrange multipliers, this equation requires using an index-3 DAE solver. Through a process called Baumgarte reduction, we can be reduce these requirements to an index-1 DAE solver (such as [ode15s](https://ch.mathworks.com/help/matlab/ref/ode15s.html) or [ode23t](https://ch.mathworks.com/help/matlab/ref/ode23t.html) in MATLAB or any DAE solver offered by [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/tutorials/dae_example/) in Julia). 
 
-Baumgarte reduction involves taking two time derivatives of the holonomic constraint, then taking some linear combination of those derivatives in order to generate a new constraint of the form:
-
-$$
-z_0 + z_1 + z_2 = 0
-$$
-
-where 
+Baumgarte reduction involves taking two time derivatives of the holonomic constraint, then taking some linear combination of those derivatives in order to generate a new constraint of the form: $z_0 + z_1 + z_2 = 0$, where
 
 $$
 z_0 = h(q) \in \mathbb{R}^{6 \times 1}
@@ -276,36 +240,30 @@ $$
 z_2 = \frac{d^2}{dt^2}h(q) = \nabla_q (H(q) \dot{q}) \dot{q} + H(q) \ddot{q} = \nabla_q (H(q) \dot{q}) \dot{q} + H(q) (M(q)^{-1} (H^T(q)\lambda - C(q,\dot{q}) - G(q))) \in \mathbb{R}^{6 \times 1}
 $$
 
-where
-$$
-\nabla_x \mathbf{f} = \left[\begin{array}{ccc}
+where $\nabla_x \mathbf{f} = \left[\begin{array}{ccc}
 \dfrac{\partial \mathbf{f}(\mathbf{x})}{\partial x_{1}} & \cdots & \dfrac{\partial \mathbf{f}(\mathbf{x})}{\partial x_{n}}
-\end{array}\right] 
-$$
+\end{array}\right]$
 
 To incorporate friction into the model, we can incorporate a viscous damping matrix whose elements correspond to damping coefficients on each generalized coordinate into the right-hand side of the differential equations.
 
 $$
 D = \left[\begin{array}{ccc}
 d_1 & \cdots & d_9
-\end{array}\right] 
+\end{array}\right]^T
 $$
 
 $$
 M(q) \ddot{q} + C(q,\dot{q}) + G(q) = H^{T}(q) \lambda + D \dot{q}
 $$
 
-#### Open-Loop Delta Robot Animation
-
-
-
-## Complete Robot (Hamiltonian)
-
+### Delta Robot Animation (with Damping)
+![Delta Robot Animation](delta-robot-modeling-images/robot_animation.gif)
+*<p style="text-align: center;">Figure 5: Animated numerical solution to system of differential-algebraic equations (DAEs) representing the dynamics of a delta robot</p>*
 
 ## Forward Kinematics 
 Forward kinematics is the process of ascertaining the position and orientation of the end-effector given joint angles.
 
-The forward kinematics of the delta robot must be computed numerically using something like Newton-Raphson.
+The forward kinematics of the delta robot must be computed numerically using something like [Newton-Raphson](https://personal.math.ubc.ca/~anstee/math104/104newtonmethod.pdf).
 
 The approach is, in essence, to guess the rest of the joint angles that haven't been given, which once determined will trivially yield the end-effector location, and measure the adequecy of the guessed solution by seeing whether such joint angles satisfy the holonomic constraint. If they satisfy the constraint within some threshold, we can be reasonably certain that we know the end-effector position.
 
@@ -327,9 +285,11 @@ The following Julia code implements the Newton-Raphson algorithm for an arbitrar
 
 ```julia
 function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=1e-15, max_iter=75) where T <: Real
+    # Make sure the vector lengths are as we expect
     @assert length(phi) == 3
     @assert length(x0) == 6
 
+    # initialize variables
     q11 = phi[1]
     q21 = phi[2]
     q31 = phi[3]
@@ -340,6 +300,7 @@ function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=
     r_platform = p.rp
     i = 0
 
+    # iterate until solution is found 
     while (ϵ === nothing || abs(ϵ) > abstol) && i < max_iter
         q12 = x0[1];
         q13 = x0[2];
@@ -348,6 +309,7 @@ function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=
         q32 = x0[5];
         q33 = x0[6];
 
+        # jacobian matrix
         J = @SMatrix [
             l2*cos(q12)*sin(q13) l2*cos(q13)*sin(q12) (l2*(cos(q22)*sin(q23) + 3^(1/2)*sin(q22)))/2 (l2*cos(q23)*sin(q22))/2 0 0;
             -l2*sin(q12) 0 -(l2*(sin(q22) - 3^(1/2)*cos(q22)*sin(q23)))/2 (3^(1/2)*l2*cos(q23)*sin(q22))/2 0 0;
@@ -357,6 +319,7 @@ function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=
             l2*cos(q12)*cos(q13) -l2*sin(q12)*sin(q13) 0 0 -l2*cos(q32)*cos(q33) l2*sin(q32)*sin(q33)
         ];
 
+        # holonomic constraint vector
         h = SVector{6}([
             l2*sin(q12)*sin(q13) - (3^(1/2)*(r_base - r_platform + l1*cos(q21) + l2*cos(q22)))/2 + (l2*sin(q22)*sin(q23))/2;
             (3*r_base)/2 - (3*r_platform)/2 + l1*cos(q11) + l2*cos(q12) + (l1*cos(q21))/2 + (l2*cos(q22))/2 + (3^(1/2)*l2*sin(q22)*sin(q23))/2;
@@ -366,16 +329,18 @@ function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=
             l1*sin(q11) - l1*sin(q31) + l2*cos(q13)*sin(q12) - l2*cos(q33)*sin(q32)
         ]);
 
+        # update rule
         xk = x0 - J \ h;
 
+        # termination conditions and loop variable update
         ϵ = sum(xk - x0);
         x0 = xk;
         i += 1;
     end
 
+    # return answer
     x0 = convert(Vector{Real}, x0)
     x0 = [q11, x0[1], x0[2], q21, x0[3], x0[4], q31, x0[5], x0[6]];
-
     return x0, i, ϵ;
 end
 ```
@@ -389,75 +354,99 @@ The following MATLAB function implements the analytic solution.
 
 ```MATLAB
 function q = inverse_kin(v, p)
+%inverse_kin computes the inverse kinematics of a delta robot
+%   given 'v' the position of the end effector (x,y,z), and 'p'
+%   the delta parameters (link lengths, etc.), find the 
+%   configuration of the robot 'q'
 
+% decompose the end-effector location vector
 x = v(1);
 y = v(2);
 z = v(3);
 
+% decompose the parameter struct
 rb = p.r_base;
 re = p.r_platform;
 l1 = p.l1;
 l2 = p.l2;
 
+% Determine the wrist contact point for arm 1
 X = [x; y + re; z];
 
+% solve the quadratic equation for arm 1
 E = 2 * (rb - X(2)) * l1;
 F = 2 * l1 * - X(3);
 G = X(1)^2 + X(2)^2 + X(3)^2 + rb^2 - 2*rb*X(2) + l1^2 - l2^2;
-
 phi1_pos = 2 * atan((-F + sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
 phi1_neg = 2 * atan((-F - sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
-% if abs(phi1_neg) < abs(phi1_pos)
+
+% pick the solution with the outwardly kinked arm
 if cos(phi1_neg) > cos(phi1_pos)
     q11 = phi1_neg;
 else
     q11 = phi1_pos;
 end
-% q11 = phi1_neg;
+
+% perform routine algebra to isolate other joint variables for arm 1
 q12 = acos((X(2) - rb - l1 * cos(q11)) / l2);
 q13 = asin(X(1) / (l2 * sin(q12)));
 
-
+% Determine the wrist contact point for arm 2
 X = rot_z(-2 * pi / 3)' * (X - [0; re; 0]) + [0; re; 0];
 
+% solve the quadratic equation for arm 2
 E = 2 * (rb - X(2)) * l1;
 F = 2 * l1 * -X(3);
 G = X(1)^2 + X(2)^2 + X(3)^2 + rb^2 - 2*rb*X(2) + l1^2 - l2^2;
+phi2_pos = 2 * atan((-F + sqrt(E^2 + F^2 - G^2)) / (G - E)); %q21
+phi2_neg = 2 * atan((-F - sqrt(E^2 + F^2 - G^2)) / (G - E)); %q21
 
-phi2_pos = 2 * atan((-F + sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
-phi2_neg = 2 * atan((-F - sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
-% if abs(phi2_neg) < abs(phi2_pos)
+% pick the solution with the outwardly kinked arm
 if cos(phi2_neg) > cos(phi2_pos)
     q21 = phi2_neg;
 else
     q21 = phi2_pos;
 end
-% q21 = phi2_neg;
+
+% perform routine algebra to isolate other joint variables for arm 2
 q22 = acos((X(2) - rb - l1 * cos(q21)) / l2);
 q23 = asin(X(1) / (l2 * sin(q22)));
 
+% Determine the wrist contact point for arm 3
 X = rot_z(-2 * pi / 3)' * (X - [0; re; 0]) + [0; re; 0];
 
+% solve the quadratic equation for arm 3
 E = 2 * (rb - X(2)) * l1;
 F = 2 * l1 * -X(3);
 G = X(1)^2 + X(2)^2 + X(3)^2 + rb^2 - 2*rb*X(2) + l1^2 - l2^2;
-
 phi3_pos = 2 * atan((-F + sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
 phi3_neg = 2 * atan((-F - sqrt(E^2 + F^2 - G^2)) / (G - E)); %q11
-% if abs(phi3_neg) < abs(phi3_pos)
+
+% pick the solution with the outwardly kinked arm
 if cos(phi3_neg) > cos(phi3_pos)
     q31 = phi3_neg;
 else
     q31 = phi3_pos;
 end
-% q31 = phi3_neg;
+
+% perform routine algebra to isolate other joint variables for arm 3
 q32 = acos((X(2) - rb - l1 * cos(q31)) / l2);
 q33 = asin(X(1) / (l2 * sin(q32)));
 
+% put solutions in return vector
 q = [q11; q12; q13; q21; q22; q23; q31; q32; q33];
 end
 ```
 
 ## Next Steps...
 Now that we have a working model for the robot, the next step will be to create a control law to track reference trajectories while rejecting disturbances subject to model uncertainty with the stretch goal of maintaining a desired end-effector force as well. 
+
+
+
+### References
+
+[1] Sandy Evangelista. "The Delta robot – Swiss-made and fastest in the world!" *Website: <a href="https://actu.epfl.ch/news/the-delta-robot-swiss-made-and-fastest-in-the-worl/">https://actu.epfl.ch/news/the-delta-robot-swiss-made-and-fastest-in-the-worl/</a>*. November 14, 2011. <p id="epfl"/>
+
+[2] Bortoff, S. A. "Object Oriented Modeling and Control of Delta Robots." *IEEE Conference on Control Technology and Applications.* August 25, 2018. <p id="merl"/>
+
 

@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const mk = require('markdown-it-katexx');
+// var hljs = require('highlight.js') // https://highlightjs.org/
 const markdown = require('markdown-it')(
 	{
 		html: true,
