@@ -185,7 +185,7 @@ The complete robot may be modeled as the composite of three of these double pend
 The full unconstrained Lagrangian is given by the sum of the Lagrangians of the three subsystems (three double pendula): $L_u = L_1 + L_2 + L_3$. We can constrain the system by adding an additional holonomic constraint term: $L = L_u + \lambda^T h$, where $\lambda \in \mathbb{R}^{6 \times 1}$.
 
 $$
-h(q) = \begin{bmatrix} x_{13} - R_z(2\pi / 3) x_{23} \\\ x_{13} - R_z(-2\pi / 3) x_{33} \end{bmatrix} \in \mathbb{R}^{6 \times 1}
+h(q) = \begin{bmatrix} x_{13} - R_z(2\pi / 3) x_{23} \\\ x_{13} - R_z(-2\pi / 3) x_{33} \end{bmatrix} = 0 \in \mathbb{R}^{6 \times 1}
 $$
 
 where $\lambda$ denotes a vector of Lagrange multipliers and $h$ denotes a holonomic constraint vector.
@@ -222,7 +222,7 @@ $$
 M(q) \ddot{q} + C(q,\dot{q}) + G(q) = M(q) \ddot{q} + \dot{q}^T \Gamma(q) \dot{q} + G(q) = H^{T}(q) \lambda 
 $$
 
-where $H(q) = \dot{h}(q(t))$. This may be rearranged in the following manner to yield a numerically integrable function:
+where $M \in \mathbb{R}^{9 \times 9}$, $C \in \mathbb{R}^{9 \times 1}$, $G \in \mathbb{R}^{9 \times 1}$, and $H(q) = \dot{h}(q(t)) \in \mathbb{R}^{6 \times 9}$. This may be rearranged in the following manner to yield a numerically integrable function:
 
 $$
 \ddot{q} = M^{-1} (H^T\lambda - \dot{q}^T \Gamma \dot{q} - G)
