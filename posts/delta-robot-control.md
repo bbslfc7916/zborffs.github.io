@@ -1,6 +1,8 @@
 # Delta Robot Control (2/2)
 *<p style="text-align: center;">October 27, 2021</p>*
 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fzborffs.github.io%2Fsite%2Fposts%2Fdelta-robot-control.html&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
 ## Summary
 I derive both robust analog and digital motion control laws for delta robots to track B-Spline reference trajectories subject to model uncertainty and sensor noise.
 
