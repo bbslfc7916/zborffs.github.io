@@ -124,7 +124,7 @@ $$
 V = -g (l_1(\frac{1}{2} m_1 + (m_2 + \frac{m_3}{3})) \sin(\phi_1) + l_2(\frac{1}{2} m_2 + \frac{m_3}{3}) \sin(\phi_2) \cos(\phi_3))
 $$
 
-The Lagrangian of a system is a scalr quantity equal to the system's kinetic energy minus its potential energy: $L = T - V$. In this case, the expression is too long to warrant typing out, but the following MATLAB code will symbolically generate the expressions.
+The Lagrangian of a system is a scalr quantity equal to the system's kinetic energy minus its potential energy: $L = T - V$. In this case, the expression is too long to warrant typing out, but the following `MATLAB` code will symbolically generate the expressions.
 
 ```javascript
 phi1 = q1(1);
@@ -191,7 +191,7 @@ $$
 where $\lambda$ denotes a vector of Lagrange multipliers and $h$ denotes a holonomic constraint vector.
 
 
-The following MATLAB snippet performs these operations and additionally transforms the Lagrangian into the Euler-Lagrange equations.
+The following `MATLAB` snippet performs these operations and additionally transforms the Lagrangian into the Euler-Lagrange equations.
 
 ```MATLAB
 %% Declare Holonomic Constraint
@@ -228,7 +228,7 @@ $$
 \ddot{q} = M^{-1} (H^T\lambda - \dot{q}^T \Gamma \dot{q} - G)
 $$
 
-Because of the addition of the Lagrange multipliers, this equation requires using an index-3 DAE solver. Through a process called Baumgarte reduction, we can be reduce these requirements to an index-1 DAE solver (such as [ode15s](https://ch.mathworks.com/help/matlab/ref/ode15s.html) or [ode23t](https://ch.mathworks.com/help/matlab/ref/ode23t.html) in MATLAB or any DAE solver offered by [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/tutorials/dae_example/) in Julia). 
+Because of the addition of the Lagrange multipliers, this equation requires using an index-3 DAE solver. Through a process called Baumgarte reduction, we can be reduce these requirements to an index-1 DAE solver (such as [ode15s](https://ch.mathworks.com/help/matlab/ref/ode15s.html) or [ode23t](https://ch.mathworks.com/help/matlab/ref/ode23t.html) in `MATLAB` or any DAE solver offered by [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/tutorials/dae_example/) in `Julia`). 
 
 Baumgarte reduction involves taking two time derivatives of the holonomic constraint, then taking some linear combination of those derivatives in order to generate a new constraint of the form: $z_0 + z_1 + z_2 = 0$, where
 
@@ -285,7 +285,7 @@ $$
 q_{i+1} = q_{i} - J^{-1}(q_i) h(q_i)
 $$
 
-The following Julia code implements the Newton-Raphson algorithm for an arbitrary delta robot.
+The following `Julia` code implements the Newton-Raphson algorithm for an arbitrary delta robot.
 
 ```julia
 function for_kin(phi::Array{T, 1}, x0::Array{T, 1}, p::DeltaRobotParams; abstol=1e-15, max_iter=75) where T <: Real
@@ -354,7 +354,7 @@ Inverse kinematics is the process determining the joint angles of a robot given 
 
 The inverse kinematics of the delta robot may be found analytically by solving 3 independent quadratic equations, then performing some routine algebra.
 
-The following MATLAB function implements the analytic solution.
+The following `MATLAB` function implements the analytic solution.
 
 ```MATLAB
 function q = inverse_kin(v, p)
