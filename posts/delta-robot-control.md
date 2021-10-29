@@ -14,7 +14,7 @@ All the source code is available on [github](https://github.com/zborffs/Delta).
 ![Demo](delta-robot-control-images/actual.gif)
 *<p style="text-align: center;">Figure 1: Animation of solution to system of DAEs representing the dynamics of a delta robot with feedforward PID motion controller moving end-effector along B-Spline reference trajectory</p>*
 ![Demo Error Graphs](delta-robot-control-images/error_actual.png)
-*<p style="text-align: center;">Figure 2: Plots of error signals for each joint variable corresponding to the simulation in Figure 1.</p>*
+*<p style="text-align: center;">Figure 2: Plots of reference and measured joint variable signals corresponding to the simulation in Figure 1.</p>*
 
 ## Feedforward PID Motion Control
 One of the most common control schemes for the motion control of robotic manipulators is feed-forward PID control.
@@ -42,7 +42,7 @@ Within the feedforward PID framework, there is no way of handling the constraint
 To derive $P$, let us first rearrange the equations:
 
 $$
-Bu = \tau = M(q) \ddot{q} + C(q, \dot{q}) + H^T(q)  \tag{3}
+Bu = \tau = M(q) \ddot{q} + C(q, \dot{q}) + H^T(q) \lambda \tag{3}
 $$
 
 $$
@@ -217,14 +217,14 @@ By making use of the inverse kinematics algorithm from the previous article, we 
 The following animation depicts the robot perfectly tracking the trajectory from Figure 7 after having converted the end-effector trajectory into state variable trajectories via the inverse kinematics algorithm.
 
 ![Robot Tracking Trajectory](delta-robot-control-images/reference.gif)
-*<p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 7.</p>*
+*<p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 10.</p>*
 
 ## Robustness
-The control law that we have derived makes use of knowledge of system parameters to compute output torques and, our simulations assume that we can perfectly capture the full-state of the system from the sensors without any additive noise. If this controller is to be at all useful for real-world applications, it will need to be robust both to model uncertainty -- that is slightly different model parameters than those the system actually exhibits -- and exogenous disturbances -- that is additive noise or vibrations causing the joints or links in actuality or their sensor measurements to deviate slightly from the controller's predictions.
+The control law that we have derived makes use of knowledge of system parameters to compute output torques, and our simulations assume that we can perfectly capture the full-state of the system from the sensors without any noise. If this controller is to be at all useful for real-world applications, it will need to be robust both to model uncertainty -- that is slightly different model parameters than those the system actually exhibits -- and exogenous disturbances -- that is additive noise or vibrations causing the joints or links in actuality or their sensor measurements to deviate slightly from the controller's predictions.
 
 In this section, we will test whether the controller is robust *in simulacra* by slightly modifying the controller's internal model parameters while simultaneously injecting additive white Gaussian noise to various state variables to simulate sensor noise. 
 
-If controller can still reasonably track reference trajectories and return to the home position despite these factors, then we can be marginally more certain in the robustness of the controller. To test this more rigorously, this controller should be deployed to an actual robot and tested similarly.
+If the controller can still reasonably track reference trajectories and return to the home position despite these factors, then we can be marginally more certain in the robustness of the controller. To test this more rigorously, this controller should be deployed to an actual robot and empircally tested in a similar manner.
 
 ### Model Uncertainty and Exogenous Disturbances
 We can integrate model uncertainty into our control law by introducing estimates of the system parameters. An estimated model parameter is indicated with a tilde over the variable ($\widetilde{X}$):
