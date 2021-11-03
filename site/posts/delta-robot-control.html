@@ -137,9 +137,9 @@ basis = BSplines.BSplineBasis(<span class="hljs-number">4</span>, [<span class="
 <p><img src="delta-robot-control-images/trajectory_basis_functions.png" alt="Basis Functions"><br>
 <em><p style="text-align: center;">Figure 10: Plot of B-Spline basis functions used for computing the trajectory in Figure 9.</p></em></p>
 <p>By making use of the inverse kinematics algorithm from the previous article, we can transform the end-effector displacement, velocity, and acceleration vectors into such vectors for the 9 state variables. These reference trajectories can then be fed into our control algorithm.</p>
-<p>The following animation depicts the robot perfectly tracking the trajectory from Figure 7 after having converted the end-effector trajectory into state variable trajectories via the inverse kinematics algorithm.</p>
+<p>The following animation depicts the robot perfectly tracking the trajectory from Figure 9 after having converted the end-effector trajectory into state variable trajectories via the inverse kinematics algorithm.</p>
 <p><img src="delta-robot-control-images/reference.gif" alt="Robot Tracking Trajectory"><br>
-<em><p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 10.</p></em></p>
+<em><p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 9.</p></em></p>
 <h2>Robustness</h2>
 <p>The control law that we have derived makes use of knowledge of system parameters to compute output torques, and our simulations assume that we can perfectly capture the full-state of the system from the sensors without any noise. If this controller is to be at all useful for real-world applications, it will need to be robust both to model uncertainty – that is slightly different model parameters than those the system actually exhibits – and exogenous disturbances – that is additive noise or vibrations causing the joints or links in actuality or their sensor measurements to deviate slightly from the controller’s predictions.</p>
 <p>In this section, we will test whether the controller is robust <em>in simulacra</em> by slightly modifying the controller’s internal model parameters while simultaneously injecting additive white Gaussian noise to various state variables to simulate sensor noise.</p>

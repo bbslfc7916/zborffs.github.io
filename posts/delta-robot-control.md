@@ -214,10 +214,10 @@ basis = BSplines.BSplineBasis(4, [0.0, 1.0, 1.0, 2.0, 3.0, 3.0, 4.0])
 
 By making use of the inverse kinematics algorithm from the previous article, we can transform the end-effector displacement, velocity, and acceleration vectors into such vectors for the 9 state variables. These reference trajectories can then be fed into our control algorithm.
 
-The following animation depicts the robot perfectly tracking the trajectory from Figure 7 after having converted the end-effector trajectory into state variable trajectories via the inverse kinematics algorithm.
+The following animation depicts the robot perfectly tracking the trajectory from Figure 9 after having converted the end-effector trajectory into state variable trajectories via the inverse kinematics algorithm.
 
 ![Robot Tracking Trajectory](delta-robot-control-images/reference.gif)
-*<p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 10.</p>*
+*<p style="text-align: center;">Figure 11: Delta Robot perfectly tracking the B-Spline trajectory from Figure 9.</p>*
 
 ## Robustness
 The control law that we have derived makes use of knowledge of system parameters to compute output torques, and our simulations assume that we can perfectly capture the full-state of the system from the sensors without any noise. If this controller is to be at all useful for real-world applications, it will need to be robust both to model uncertainty -- that is slightly different model parameters than those the system actually exhibits -- and exogenous disturbances -- that is additive noise or vibrations causing the joints or links in actuality or their sensor measurements to deviate slightly from the controller's predictions.

@@ -2,7 +2,7 @@
 *<p style="text-align: center;">October 28, 2021</p>*
 
 ## Summary
-The objective of this research project was **to design a state-observer and controller to stabilize** a chaotic dynamical system, namely the Chen system.
+The objective of this research project was **to design a controller and state-observer to render an unstable equilibrium point of the unforced chaotic system -- namely the Chen system -- attractive**.
 
 This research was carried out with and directed by [Dr. Christopher Nielsen](https://ece.uwaterloo.ca/~cnielsen/) at the University of Waterloo as part of an Undergradaute Research Assistantship (URA) in 2021. 
 

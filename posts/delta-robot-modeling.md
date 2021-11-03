@@ -21,7 +21,7 @@ A delta robot is a parallel robot consisting of an immobile base, a mobile platf
 Delta robots have three degrees-of-freedom: namely, the position of the end-efffector; the orientation of the end-effector cannot be changed and is usually perpendicular to the ground, making the platform parallel to the base.
 
 ## Deriving the Dynamics
-In this section, I'll derive the dynamics of the robot using [Lagrangian mechanics](https://en.wikipedia.org/wiki/Lagrangian_mechanics). Later on in the post, I'll extend this to include [Hamiltonian mechanics](https://en.wikipedia.org/wiki/Hamiltonian_mechanics) so that symplectic solvers can be used.
+In this section, I'll derive the dynamics of the robot using [Lagrangian mechanics](https://en.wikipedia.org/wiki/Lagrangian_mechanics). In the future, I'll extend this to include [Hamiltonian mechanics](https://en.wikipedia.org/wiki/Hamiltonian_mechanics) so that symplectic solvers can be used.
 
 ### Overview of Approach
 Ignore the motors for now and assume that the three arms can swing freely. The upper link of each arm is a simple pendulum and the lower link is a spherical pendulum. In this sense, each arm is a double pendulum. The robot as a whole can be modeled as a composite of three of these double pendula offset by 120 degrees around the z-axis subject to a holonomic constraint forcing the positions of the ends of each arm to be the same.
@@ -166,7 +166,7 @@ $$
 
 where $M(q) \in \mathbb{R}^{3\times 3}$, $C(q, \dot{q}) \in \mathbb{R}^{3\times 1}$, and $G(q) \in \mathbb{R}^{3 \times 1}$. 
 
-Because the inertia matrix is positive-definite, it has an inverse - though it might ill-conditioned. This means we can manipulate the above equation to yield an equation for the acceleration, which can be used to solve for trajectories numerically:
+Because the inertia matrix is positive-definite, it has an inverse - though it might be ill-conditioned. This means we can manipulate the above equation to yield an equation for the acceleration, which can be used to solve for trajectories numerically:
 
 $$
 \ddot{q} = M^{-1}(q)(-C(q, \dot{q}) - G(q))
